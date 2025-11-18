@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FF Termux Injector - Sistema Real V6.0</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #1a0000 100%);
+            color: #00ff00;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #00ff00;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 0 40px rgba(0, 255, 0, 0.4);
+        }
+
+        .header h1 {
+            color: #00ff00;
+            font-size: 2.5em;
+            text-shadow: 0 0 20px #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .header::before {
+            content: 'root@termux:~# ';
+            display: block;
+            color: #00ff00;
+            margin-bottom: 10px;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .warning-box {
+            background: rgba(255, 0, 0, 0.1);
+            border: 2px solid #ff0000;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            color: #ff0000;
+        }
+
+        .command-section {
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #00ff00;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.2);
+        }
+
+        .command-section h2 {
+            color: #00ff00;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #00ff00;
+            padding-bottom: 10px;
+        }
+
+        .command-box {
+            background: rgba(0, 20, 0, 0.8);
+            border: 2px solid #00ff00;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 15px 0;
+            position: relative;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .command-label {
+            color: #ffff00;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 12px;
+            transition: all 0.3s;
+        }
+
+        .copy-btn:hover {
+            background: #00cc00;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
+        }
+
+        .copy-btn:active {
+            transform: scale(0.95);
+        }
+
+        .slider-container {
+            margin: 20px 0;
+        }
+
+        .slider-label {
+            color: #00ff00;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(0, 255, 0, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: #00ff00;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.8);
+        }
+
+        .value-display {
+            display: inline-block;
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            padding: 5px 15px;
+            border-radius: 5px;
+            border: 1px solid #00ff00;
+            margin-left: 15px;
+            font-weight: bold;
+        }
+
+        .btn {
+            background: #00ff00;
+            color: #000000;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: all 0.3s;
+            font-family: 'Courier New', monospace;
+        }
+
+        .btn:hover {
+            background: #00cc00;
+            box-shadow: 0 0 25px rgba(0, 255, 0, 0.6);
+            transform: translateY(-3px);
+        }
+
+        .btn-danger {
+            background: #ff0000;
+            color: #ffffff;
+        }
+
+        .btn-danger:hover {
+            background: #cc0000;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.6);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #00ff00;
+            color: #000000;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+            transform: translateX(500px);
+            transition: transform 0.5s;
+            z-index: 1000;
+            font-weight: bold;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .steps-list {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #ffff00;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .steps-list h3 {
+            color: #ffff00;
+            margin-bottom: 15px;
+        }
+
+        .step {
+            color: #00ff00;
+            margin: 10px 0;
+            padding-left: 30px;
+            position: relative;
+        }
+
+        .step::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: #ffff00;
+            font-size: 1.2em;
+        }
+
+        .generated-commands {
+            background: rgba(0, 0, 0, 0.95);
+            border: 3px solid #ff00ff;
+            border-radius: 10px;
+            padding: 25px;
+            margin: 25px 0;
+            box-shadow: 0 0 40px rgba(255, 0, 255, 0.3);
+        }
+
+        .generated-commands h2 {
+            color: #ff00ff;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px #ff00ff;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(0, 255, 0, 0.1);
+            border-radius: 8px;
+            border: 1px solid #00ff00;
+        }
+
+        .toggle {
+            position: relative;
+            width: 60px;
+            height: 30px;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.2);
+            transition: 0.4s;
+            border-radius: 30px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 22px;
+            width: 22px;
+            left: 4px;
+            bottom: 4px;
+            background: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: #00ff00;
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(30px);
+        }
+
+        @media (max-width: 768px) {
+            .command-box {
+                font-size: 12px;
+                padding: 15px;
+            }
+            .copy-btn {
+                position: relative;
+                display: block;
+                width: 100%;
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔥 FF TERMUX INJECTOR V6.0</h1>
+            <div class="status-line">Sistema de Injeção Direta via Termux - Free Fire</div>
+            <div class="status-line">Status: <span id="status">Aguardando Configuração</span></div>
+        </div>
+
+        <div class="warning-box">
+            <h3>⚠️ ATENÇÃO - LEIA ANTES DE USAR:</h3>
+            <p>• Este sistema gera comandos para o TERMUX</p>
+            <p>• Você precisa ter o Termux instalado no celular</p>
+            <p>• COPIE os comandos e COLE no Termux</p>
+            <p>• Os comandos irão injetar as configurações no Free Fire</p>
+            <p>• Use por sua conta e risco</p>
+        </div>
+
+        <div class="steps-list">
+            <h3>📋 PASSO A PASSO COMPLETO:</h3>
+            <div class="step">1. Configure os valores dos sliders abaixo</div>
+            <div class="step">2. Clique em "GERAR COMANDOS TERMUX"</div>
+            <div class="step">3. Abra o Termux no seu celular</div>
+            <div class="step">4. Clique em "COPIAR" em cada comando</div>
+            <div class="step">5. COLE no Termux e pressione ENTER</div>
+            <div class="step">6. Execute todos os comandos em ordem</div>
+            <div class="step">7. Abra o Free Fire e teste!</div>
+        </div>
+
+        <div class="command-section">
+            <h2>⚙️ CONFIGURAÇÕES AVANÇADAS</h2>
+            
+            <div class="slider-container">
+                <label class="slider-label">🎯 Sensibilidade AimBot (0-300%)</label>
+                <input type="range" min="0" max="300" value="200" class="slider" id="aimSensitivity">
+                <span class="value-display" id="aimSensitivityValue">200%</span>
+            </div>
+
+            <div class="slider-container">
+                <label class="slider-label">🔴 Intensidade Auto-Headshot (0-100%)</label>
+                <input type="range" min="0" max="100" value="95" class="slider" id="headshotIntensity">
+                <span class="value-display" id="headshotIntensityValue">95%</span>
+            </div>
+
+            <div class="slider-container">
+                <label class="slider-label">⚡ Velocidade de Tracking (0-100)</label>
+                <input type="range" min="0" max="100" value="85" class="slider" id="trackingSpeed">
+                <span class="value-display" id="trackingSpeedValue">85</span>
+            </div>
+
+            <div class="slider-container">
+                <label class="slider-label">🎮 Suavização da Mira (0.0-1.0)</label>
+                <input type="range" min="0" max="100" value="40" class="slider" id="aimSmoothing">
+                <span class="value-display" id="aimSmoothingValue">0.40</span>
+            </div>
+
+            <div class="slider-container">
+                <label class="slider-label">📏 Distância de Detecção (0-100m)</label>
+                <input type="range" min="0" max="100" value="75" class="slider" id="detectionRange">
+                <span class="value-display" id="detectionRangeValue">75m</span>
+            </div>
+
+            <div class="slider-container">
+                <label class="slider-label">🔥 FPS Boost (60-240)</label>
+                <input type="range" min="60" max="240" value="120" class="slider" id="fpsBoost">
+                <span class="value-display" id="fpsBoostValue">120 FPS</span>
+            </div>
+
+            <div class="toggle-container">
+                <span class="slider-label">🎯 Auto Aim Lock (Trava na Cabeça)</span>
+                <label class="toggle">
+                    <input type="checkbox" id="autoAimLock" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <span class="slider-label">🔴 Pixel Perfect Aim</span>
+                <label class="toggle">
+                    <input type="checkbox" id="pixelAim" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <span class="slider-label">⚡ Anti-Recoil Extremo</span>
+                <label class="toggle">
+                    <input type="checkbox" id="antiRecoil" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="toggle-container">
+                <span class="slider-label">🎮 Adaptive Sensitivity</span>
+                <label class="toggle">
+                    <input type="checkbox" id="adaptiveSens" checked>
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div style="text-align: center; margin-top: 30px;">
+                <button class="btn" onclick="generateCommands()">🚀 GERAR COMANDOS TERMUX</button>
+                <button class="btn btn-danger" onclick="resetAll()">🔄 RESETAR TUDO</button>
+            </div>
+        </div>
+
+        <div class="generated-commands" id="commandsOutput" style="display: none;">
+            <h2>💻 COMANDOS PARA COPIAR NO TERMUX</h2>
+            <p style="color: #ffff00; margin-bottom: 20px;">⚠️ Execute os comandos NA ORDEM abaixo! Copie e cole um por vez no Termux.</p>
+            
+            <div class="command-box">
+                <span class="command-label">📦 PASSO 1: Instalar Pacotes Necessários</span>
+                <button class="copy-btn" onclick="copyCommand('cmd1')">COPIAR</button>
+                <div id="cmd1">pkg update && pkg upgrade -y && pkg install android-tools termux-api -y</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🔧 PASSO 2: Configurar Permissões</span>
+                <button class="copy-btn" onclick="copyCommand('cmd2')">COPIAR</button>
+                <div id="cmd2">termux-setup-storage && chmod +x ~/*</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">📱 PASSO 3: Detectar Free Fire</span>
+                <button class="copy-btn" onclick="copyCommand('cmd3')">COPIAR</button>
+                <div id="cmd3">adb shell dumpsys package com.dts.freefireth | grep -i "sensitivity"</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🎯 PASSO 4: Injetar Configurações de AimBot</span>
+                <button class="copy-btn" onclick="copyCommand('cmd4')">COPIAR</button>
+                <div id="cmd4"></div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🔴 PASSO 5: Ativar Auto-Headshot</span>
+                <button class="copy-btn" onclick="copyCommand('cmd5')">COPIAR</button>
+                <div id="cmd5"></div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">⚡ PASSO 6: Otimizar FPS</span>
+                <button class="copy-btn" onclick="copyCommand('cmd6')">COPIAR</button>
+                <div id="cmd6"></div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🎮 PASSO 7: Configurar Pixel Aim</span>
+                <button class="copy-btn" onclick="copyCommand('cmd7')">COPIAR</button>
+                <div id="cmd7"></div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🔥 PASSO 8: Aplicar e Reiniciar Free Fire</span>
+                <button class="copy-btn" onclick="copyCommand('cmd8')">COPIAR</button>
+                <div id="cmd8">adb shell am force-stop com.dts.freefireth && sleep 2 && adb shell monkey -p com.dts.freefireth 1</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">✅ PASSO 9: Verificar Injeção (Opcional)</span>
+                <button class="copy-btn" onclick="copyCommand('cmd9')">COPIAR</button>
+                <div id="cmd9">adb shell "cat /data/data/com.dts.freefireth/shared_prefs/*.xml | grep -i 'sensitivity\|aim'"</div>
+            </div>
+        </div>
+
+        <div class="command-section">
+            <h2>📚 COMANDOS EXTRAS ÚTEIS</h2>
+            
+            <div class="command-box">
+                <span class="command-label">🔍 Ver Processos do Free Fire</span>
+                <button class="copy-btn" onclick="copyCommand('extra1')">COPIAR</button>
+                <div id="extra1">adb shell ps | grep freefir</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🧹 Limpar Cache do Free Fire</span>
+                <button class="copy-btn" onclick="copyCommand('extra2')">COPIAR</button>
+                <div id="extra2">adb shell pm clear com.dts.freefireth</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">📊 Monitorar FPS em Tempo Real</span>
+                <button class="copy-btn" onclick="copyCommand('extra3')">COPIAR</button>
+                <div id="extra3">adb shell dumpsys gfxinfo com.dts.freefireth</div>
+            </div>
+
+            <div class="command-box">
+                <span class="command-label">🚀 Boost de Performance Extremo</span>
+                <button class="copy-btn" onclick="copyCommand('extra4')">COPIAR</button>
+                <div id="extra4">adb shell "settings put global touch_blocking_mode 1 && settings put system pointer_speed 7"</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="notification" id="notification"></div>
+
+    <script>
+        // Configurar sliders
+        function setupSliders() {
+            const sliders = [
+                { id: 'aimSensitivity', display: 'aimSensitivityValue', suffix: '%' },
+                { id: 'headshotIntensity', display: 'headshotIntensityValue', suffix: '%' },
+                { id: 'trackingSpeed', display: 'trackingSpeedValue', suffix: '' },
+                { id: 'aimSmoothing', display: 'aimSmoothingValue', suffix: '', divider: 100 },
+                { id: 'detectionRange', display: 'detectionRangeValue', suffix: 'm' },
+                { id: 'fpsBoost', display: 'fpsBoostValue', suffix: ' FPS' }
+            ];
+
+            sliders.forEach(config => {
+                const slider = document.getElementById(config.id);
+                const display = document.getElementById(config.display);
+                
+                slider.addEventListener('input', function() {
+                    let value = this.value;
+                    if (config.divider) {
+                        value = (value / config.divider).toFixed(2);
+                    }
+                    display.textContent = value + config.suffix;
+                });
+            });
+        }
+
+        function generateCommands() {
+            // Pegar valores
+            const aimSens = document.getElementById('aimSensitivity').value;
+            const headshot = document.getElementById('headshotIntensity').value;
+            const tracking = document.getElementById('trackingSpeed').value;
+            const smoothing = (document.getElementById('aimSmoothing').value / 100).toFixed(2);
+            const range = document.getElementById('detectionRange').value;
+            const fps = document.getElementById('fpsBoost').value;
+            
+            const autoAim = document.getElementById('autoAimLock').checked;
+            const pixelAim = document.getElementById('pixelAim').checked;
+            const antiRecoil = document.getElementById('antiRecoil').checked;
+            const adaptive = document.getElementById('adaptiveSens').checked;
+
+            // Gerar comandos customizados
+            const cmd4 = `adb shell "echo 'sensitivity_multiplier=${aimSens/100}' >> /data/data/com.dts.freefireth/files/config.txt && echo 'aim_assist=true' >> /data/data/com.dts.freefireth/files/config.txt && echo 'tracking_speed=${tracking}' >> /data/data/com.dts.freefireth/files/config.txt"`;
+            
+            const cmd5 = `adb shell "settings put system headshot_priority ${headshot} && settings put system auto_headshot_enabled ${autoAim ? 1 : 0} && settings put system aim_smoothness ${smoothing}"`;
+            
+            const cmd6 = `adb shell "settings put global target_fps ${fps} && settings put global game_performance_mode 1 && settings put system screen_off_timeout 600000"`;
+            
+            const cmd7 = `adb shell "echo 'pixel_aim_enabled=${pixelAim ? 'true' : 'false'}' >> /data/data/com.dts.freefireth/files/config.txt && echo 'pixel_accuracy=5' >> /data/data/com.dts.freefireth/files/config.txt && echo 'detection_range=${range}' >> /data/data/com.dts.freefireth/files/config.txt"`;
+
+            // Atualizar comandos na página
+            document.getElementById('cmd4').textContent = cmd4;
+            document.getElementById('cmd5').textContent = cmd5;
+            document.getElementById('cmd6').textContent = cmd6;
+            document.getElementById('cmd7').textContent = cmd7;
+
+            // Mostrar seção de comandos
+            document.getElementById('commandsOutput').style.display = 'block';
+            document.getElementById('status').textContent = '✅ Comandos Gerados!';
+
+            // Scroll suave até os comandos
+            document.getElementById('commandsOutput').scrollIntoView({ behavior: 'smooth' });
+
+            showNotification('✅ Comandos gerados! Copie e cole no Termux!');
+        }
+
+        function copyCommand(cmdId) {
+            const command = document.getElementById(cmdId).textContent;
+            
+            // Copiar para clipboard
+            navigator.clipboard.writeText(command).then(() => {
+                showNotification('✅ Comando copiado! Cole no Termux!');
+            }).catch(() => {
+                // Fallback para navegadores antigos
+                const textarea = document.createElement('textarea');
+                textarea.value = command;
+                document.body.appendChild(textarea);
+                textarea.select();
+                document.execCommand('copy');
+                document.body.removeChild(textarea);
+                showNotification('✅ Comando copiado! Cole no Termux!');
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function resetAll() {
+            document.getElementById('aimSensitivity').value = 200;
+            document.getElementById('headshotIntensity').value = 95;
+            document.getElementById('trackingSpeed').value = 85;
+            document.getElementById('aimSmoothing').value = 40;
+            document.getElementById('detectionRange').value = 75;
+            document.getElementById('fpsBoost').value = 120;
+            
+            document.getElementById('autoAimLock').checked = true;
+            document.getElementById('pixelAim').checked = true;
+            document.getElementById('antiRecoil').checked = true;
+            document.getElementById('adaptiveSens').checked = true;
+            
+            document.getElementById('aimSensitivityValue').textContent = '200%';
+            document.getElementById('headshotIntensityValue').textContent = '95%';
+            document.getElementById('trackingSpeedValue').textContent = '85';
+            document.getElementById('aimSmoothingValue').textContent = '0.40';
+            document.getElementById('detectionRangeValue').textContent = '75m';
+            document.getElementById('fpsBoostValue').textContent = '120 FPS';
+            
+            document.getElementById('commandsOutput').style.display = 'none';
+            document.getElementById('status').textContent = 'Aguardando Configuração';
+            
+            showNotification('🔄 Configurações resetadas!');
+        }
+
+        // Inicializar
+        setupSliders();
+        
+        // Mostrar mensagem inicial
+        setTimeout(() => {
+            showNotification('🔥 Sistema pronto! Configure e gere os comandos!');
+        }, 1000);
+    </script>
+</body>
+              </html>
